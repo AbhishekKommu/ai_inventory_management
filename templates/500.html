@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="text-center">
+        <h1 style="font-size: 8rem; line-height: 1; background: linear-gradient(135deg, #ef4444, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;">
+            500
+        </h1>
+        <h2 class="mb-2">Server Error</h2>
+        <p class="text-muted mb-3">Something went wrong on our end. Please try again.</p>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

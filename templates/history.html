@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}History | SmartStock AI{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div>
+        <h1 class="page-title">
+            <i class="fas fa-history"></i> Activity History
+        </h1>
+        <p class="page-subtitle">Complete audit trail of all your actions</p>
+    </div>
+    <form method="POST" action="{{ url_for('clear_history') }}" 
+          onsubmit="return confirm('Clear all history? This cannot be undone.');">
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Clear History
+        </button>
+    </form>
+</div>
+
+<!-- Filter -->
+<div class="card mb-4">
+    <form method="GET" class="form-row">
+        <div class="form-group" style="margin-bottom:0;">
+            <select name="action" class="form-select" onchange="this.form.submit()">
+                <option value="">All Actions</option>
+                {% for action in action_types %}
+                <option value="{{ action }}" {% if selected_action == action %}selected{% endif %}>{{ action }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 46px;">
+            <i class="fas fa-filter"></i> Apply
+        </button>
+    </form>
+</div>
+
+{% if history_items %}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>Details</th>
+                <th>IP Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history_items %}
+            <tr>
+                <td>
+                    <div>{{ item.created_at.strftime('%b %d, %Y') }}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">{{ item.created_at.strftime('%H:%M:%S') }}</div>
+                </td>
+                <td>
+                    {% if item.action == 'CREATE' %}
+                        <span class="badge badge-success"><i class="fas fa-plus"></i> Create</span>
+                    {% elif item.action == 'UPDATE' %}
+                        <span class="badge badge-info"><i class="fas fa-edit"></i> Update</span>
+                    {% elif item.action == 'DELETE' %}
+                        <span class="badge badge-danger"><i class="fas fa-trash"></i> Delete</span>
+                    {% elif item.action == 'LOGIN' %}
+                        <span class="badge badge-primary"><i class="fas fa-sign-in-alt"></i> Login</span>
+                    {% elif item.action == 'LOGOUT' %}
+                        <span class="badge badge-warning"><i class="fas fa-sign-out-alt"></i> Logout</span>
+                    {% else %}
+                        <span class="badge badge-primary">{{ item.action }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.entity_name %}
+                        <strong>{{ item.entity_name }}</strong>
+                        {% if item.entity_type %}
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ item.entity_type }}</div>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted" style="font-size: 0.85rem;">{{ item.details or '-' }}</td>
+                <td><code style="font-size: 0.75rem;">{{ item.ip_address or '-' }}</code></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<div class="d-flex justify-between align-center mt-4">
+    <div class="text-muted">
+        Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} entries)
+    </div>
+    <div class="d-flex gap-1">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('history', page=pagination.prev_num, action=selected_action) }}" class="btn btn-sm btn-outline">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+        {% if pagination.has_next %}
+        <a href="{{ url_for('history', page=pagination.next_num, action=selected_action) }}" class="btn btn-sm btn-outline">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card text-center" style="padding: 4rem 2rem;">
+    <i class="fas fa-inbox" style="font-size: 4rem; color: rgba(255,255,255,0.2); margin-bottom: 1rem;"></i>
+    <h3 class="mb-2">No History Yet</h3>
+    <p class="text-muted">Your activity will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | SmartStock AI{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div>
+        <h1 class="page-title">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </h1>
+        <p class="page-subtitle">Real-time inventory insights powered by AI</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="ai-badge">
+            <i class="fas fa-brain"></i> AI Active
+        </span>
+        <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Product
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-boxes"></i>
+        </div>
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">{{ insights.total_products }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value">${{ "%.2f"|format(insights.total_value) }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-label">Low Stock</div>
+        <div class="stat-value">{{ insights.low_stock_count }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-label">Out of Stock</div>
+        <div class="stat-value">{{ insights.out_of_stock_count }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="stat-label">Health Score</div>
+        <div class="stat-value">{{ insights.avg_health_score }}/100</div>
+    </div>
+</div>
+
+<!-- AI Insights -->
+{% if insights.insights %}
+<div class="insights-grid">
+    {% for insight in insights.insights %}
+    <div class="insight-card {{ insight.type }}">
+        <div class="insight-icon">
+            {% if insight.type == 'danger' %}🚨
+            {% elif insight.type == 'warning' %}⚠️
+            {% elif insight.type == 'success' %}✅
+            {% else %}💡{% endif %}
+        </div>
+        <div class="insight-content">
+            <h4>{{ insight.title }}</h4>
+            <p>{{ insight.message }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Charts -->
+<div class="dashboard-grid">
+    <div class="chart-container">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-pie text-primary"></i> Category Distribution
+            </h3>
+        </div>
+        <canvas id="categoryChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-bar text-primary"></i> Stock Levels
+            </h3>
+        </div>
+        <canvas id="stockChart"></canvas>
+    </div>
+</div>
+
+<!-- Low Stock Products -->
+{% if low_stock_products %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-exclamation-triangle text-warning"></i> Low Stock Alerts
+        </h3>
+        <a href="{{ url_for('products') }}?status=low" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Current</th>
+                    <th>Minimum</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in low_stock_products %}
+                <tr>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td><code>{{ product.sku }}</code></td>
+                    <td><span class="text-warning">{{ product.quantity }}</span></td>
+                    <td>{{ product.min_stock }}</td>
+                    <td>
+                        <span class="badge badge-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Low
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-sm btn-outline">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-history text-primary"></i> Recent Activity
+        </h3>
+        <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    {% if recent_history %}
+    <ul class="activity-list">
+        {% for item in recent_history %}
+        <li class="activity-item">
+            <div class="activity-icon">
+                {% if item.action == 'CREATE' %}<i class="fas fa-plus"></i>
+                {% elif item.action == 'UPDATE' %}<i class="fas fa-edit"></i>
+                {% elif item.action == 'DELETE' %}<i class="fas fa-trash"></i>
+                {% elif item.action == 'LOGIN' %}<i class="fas fa-sign-in-alt"></i>
+                {% elif item.action == 'LOGOUT' %}<i class="fas fa-sign-out-alt"></i>
+                {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            </div>
+            <div class="activity-content">
+                <div class="activity-title">{{ item.action }} - {{ item.entity_name or 'System' }}</div>
+                <div class="activity-time">{{ item.created_at.strftime('%b %d, %Y at %H:%M') }}</div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted text-center mt-3">No recent activity</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const chartData = {{ chart_data|safe }};
+</script>
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+{% endblock %}

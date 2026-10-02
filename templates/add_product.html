@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product | SmartStock AI{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div>
+        <h1 class="page-title">
+            <i class="fas fa-plus-circle"></i> Add Product
+        </h1>
+        <p class="page-subtitle">Add a new item to your inventory</p>
+    </div>
+    <a href="{{ url_for('products') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('add_product') }}">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Product Name <span class="required">*</span></label>
+                <input type="text" name="name" class="form-control" placeholder="e.g., Wireless Mouse" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">SKU</label>
+                <input type="text" name="sku" class="form-control" placeholder="Auto-generated if empty">
+                <small class="form-text">Leave empty to auto-generate</small>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <input type="text" name="category" class="form-control" placeholder="e.g., Electronics" list="categories">
+                <datalist id="categories">
+                    <option value="Electronics">
+                    <option value="Furniture">
+                    <option value="Stationery">
+                    <option value="Home">
+                    <option value="Clothing">
+                    <option value="Food">
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Supplier</label>
+                <input type="text" name="supplier" class="form-control" placeholder="e.g., TechCorp Inc.">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-textarea" placeholder="Product description..."></textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Quantity <span class="required">*</span></label>
+                <input type="number" name="quantity" class="form-control" value="0" min="0" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Minimum Stock</label>
+                <input type="number" name="min_stock" class="form-control" value="10" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Maximum Stock</label>
+                <input type="number" name="max_stock" class="form-control" value="1000" min="1">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Selling Price ($)</label>
+                <input type="number" name="price" class="form-control" value="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cost Price ($)</label>
+                <input type="number" name="cost" class="form-control" value="0.00" step="0.01" min="0">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Storage Location</label>
+                <input type="text" name="location" class="form-control" placeholder="e.g., A1-05">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image URL</label>
+                <input type="url" name="image_url" class="form-control" placeholder="https://...">
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Save Product
+            </button>
+            <a href="{{ url_for('products') }}" class="btn btn-outline btn-lg">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
